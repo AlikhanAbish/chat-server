@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Golang HTTP Server</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Golang HTTP Server</h1>
+  <div>
+    <label for="message">Message:</label>
+    <input type="text" id="message" placeholder="Введите сообщение">
+    <button id="postButton">POST</button>
+    <button id="getButton">GET</button>
+  </div>
+  <p id="errorMessage" class="error"></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody id="responseTableBody"></tbody>
+  </table>
+
+  <script>
+    // Helper function to update the table
+    function updateTable(status, message) {
+      const tableBody = document.getElementById("responseTableBody");
+      const newRow = document.createElement("tr");
+      newRow.innerHTML = `<td>${status}</td><td>${message}</td>`;
+      tableBody.appendChild(newRow);
+    }
+
+    // Helper function to show error messages
+    function showError(message) {
+      const errorMessage = document.getElementById("errorMessage");
+      errorMessage.textContent = message;
+    }
+
+    // Event listeners for buttons
+    document.getElementById("postButton").addEventListener("click", async () => {
+      const message = document.getElementById("message").value;
+
+      try {
+        const response = await fetch("/api", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message }),
+        });
+
+        if (!response.ok) {
+          showError(`Ошибка: ${response.status}`);
+          return;
+        }
+
+        const data = await response.json();
+        updateTable(data.status, data.message);
+        showError(""); // Clear error if successful
+      } catch (error) {
+        showError(`Ошибка: ${error.message}`);
+      }
+    });
+
+    document.getElementById("getButton").addEventListener("click", async () => {
+      try {
+        const response = await fetch("/api");
+
+        if (!response.ok) {
+          showError(`Ошибка: ${response.status}`);
+          return;
+        }
+
+        const data = await response.json();
+        updateTable(data.status, data.message);
+        showError(""); // Clear error if successful
+      } catch (error) {
+        showError(`Ошибка: ${error.message}`);
+      }
+    });
+  </script>
+</body>
+</html>
