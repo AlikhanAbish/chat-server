@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <script>
+        async function fetchUsers() {
+            const response = await fetch('/users');
+            const data = await response.json();
+            const userTable = document.getElementById('userTable');
+            userTable.innerHTML = '';
+            data.data.forEach(user => {
+                const row = `<tr>
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>
+                        <button onclick="deleteUser(${user.id})">Delete</button>
+                    </td>
+                </tr>`;
+                userTable.innerHTML += row;
+            });
+        }
+
+        async function createUser() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            await fetch('/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email })
+            });
+            fetchUsers();
+        }
+
+        async function deleteUser(id) {
+            await fetch(`/users?id=${id}`, { method: 'DELETE' });
+            fetchUsers();
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchUsers);
+    </script>
+</head>
+<body>
+    <h1>User Management</h1>
+    <form onsubmit="event.preventDefault(); createUser();">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <button type="submit">Create User</button>
+    </form>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+    </table>
+</body>
+</html>
